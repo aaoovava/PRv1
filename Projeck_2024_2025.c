@@ -20,6 +20,7 @@ void v(FILE** data, FILE** parse, FILE** string) {
             printf("V1: Neotvorene txt subory.\n");
             return;
         }
+
         while (fscanf(*string, "%s", id_string) == 1) {
             fscanf(*data, "%*d %*d %d %f", &hodnota1, &hodnota2);
             fgets(poznamka, sizeof(poznamka), *parse);
@@ -32,12 +33,12 @@ void v(FILE** data, FILE** parse, FILE** string) {
         break;
     
     default:
+        printf("V: Nesprávne volba vypisu.\n");
         break;
     }
 }
 
 void k(FILE* data, FILE* parse, FILE* string) {
-    printf("close\n");
     if (data != NULL) fclose(data);
     if (parse != NULL) fclose(parse);
     if (string != NULL) fclose(string);
@@ -61,7 +62,6 @@ int main() {
             return 0;
             break;
         default:
-            printf("Nespravny vstup.\n");
             break;
         }
     }
