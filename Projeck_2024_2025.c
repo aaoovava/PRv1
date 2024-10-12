@@ -9,8 +9,8 @@ void v(FILE** data, FILE** parse, FILE** string) {
     char id_string[ID_LENGTH];
     
     scanf("%d", &input);
-    switch (input)
-    {
+    while (getchar() != '\n');
+    switch (input) {
     case 1:
         if (*data == NULL) *data = fopen("data.txt", "r");
         if (*parse == NULL) *parse = fopen("parse.txt", "r");
@@ -38,6 +38,42 @@ void v(FILE** data, FILE** parse, FILE** string) {
     }
 }
 
+void h(FILE** string) {
+    int fildOfCounts[256] = { 0 };
+    char c;
+    
+    if (*string == NULL) {
+        printf("H: Neotvorene txt subory.\n");
+        return;
+    }
+    rewind(*string);
+    
+    while ((c = fgetc(*string)) != EOF) {
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+            fildOfCounts[(unsigned char)c]++;
+        }
+    }
+
+    for (c = 'A'; c <= 'Z'; c++) {
+        if (fildOfCounts[(unsigned char)c] > 0) {
+            printf("%c : %d\n", c, fildOfCounts[(unsigned char)c]);
+        }
+    }
+
+    for (c = 'a'; c <= 'z'; c++) {
+        if (fildOfCounts[(unsigned char)c] > 0) {
+            printf("%c : %d\n", c, fildOfCounts[(unsigned char)c]);
+        }
+    }
+
+    for (c = '0'; c <= '9'; c++) {
+        if (fildOfCounts[(unsigned char)c] > 0) {
+            printf("%c : %d\n", c, fildOfCounts[(unsigned char)c]);
+        }
+    }
+}
+
+
 void k(FILE* data, FILE* parse, FILE* string) {
     if (data != NULL) fclose(data);
     if (parse != NULL) fclose(parse);
@@ -50,10 +86,12 @@ int main() {
 
     while (1) {
         scanf("%c", &comandInput);
-        while (getchar() != '\n');    
+        while (getchar() != '\n');
 
-        switch (comandInput)
-        {
+        switch (comandInput) {
+        case 'h' :
+            h(&string);
+            break;
         case 'v':
             v(&data, &parse, &string);
             break;
