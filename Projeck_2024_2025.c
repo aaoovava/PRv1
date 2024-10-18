@@ -27,9 +27,15 @@ void v(FILE** data, FILE** parse, FILE** string) {
 
             printf("ID. mer. modulu: %s\n", id_string);
             printf("Hodnota 1: %d\n", hodnota1);
-            printf("Hodnota 2: %.4f\n", hodnota2);
-            printf("Poznámka: %s\n\n", poznamka);
+            printf("Hodnota 2: %g\n", hodnota2);
+            printf("Poznámka: %s\n", poznamka);
         }
+        break;
+
+    case 2:
+        break;
+
+    case 3:
         break;
     
     default:
@@ -82,13 +88,13 @@ void k(FILE* data, FILE* parse, FILE* string) {
 
 int main() {
     FILE* data = NULL, * parse = NULL, * string = NULL;
-    char comandInput;
+    char commandInput;
 
     while (1) {
-        scanf("%c", &comandInput);
+        scanf("%c", &commandInput);
         while (getchar() != '\n');
 
-        switch (comandInput) {
+        switch (commandInput) {
         case 'h' :
             h(&string);
             break;
@@ -103,6 +109,5 @@ int main() {
             break;
         }
     }
-
     return 0;
 }
