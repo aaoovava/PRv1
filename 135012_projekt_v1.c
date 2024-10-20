@@ -9,7 +9,6 @@ void v(FILE** data, FILE** parse, FILE** string) {
     char id_string[ID_LENGTH];
     
     scanf("%d", &input);
-    while (getchar() != '\n');
     switch (input) {
     case 1:
         if (*data == NULL) *data = fopen("data.txt", "r");
@@ -94,7 +93,6 @@ int main() {
 
     while (1) {
         scanf("%c", &commandInput);
-        while (getchar() != '\n');
 
         switch (commandInput) {
         case 'h' :
