@@ -33,14 +33,16 @@ void v(FILE** data, FILE** parse, FILE** string) {
         break;
 
     case 2:
+    /* TODO: V2 */
         break;
 
     case 3:
+    /* TODO: V3 */
         break;
     
     default:
         printf("V: Nesprávne volba vypisu.\n");
-        break;
+        break;і
     }
 }
 
@@ -49,7 +51,7 @@ void h(FILE** string) {
     char c;
     
     if (*string == NULL) {
-        printf("H: Neotvorene txt subory.\n");
+        printf("H: Neotvoreny subor.\n");
         return;
     }
     rewind(*string);
