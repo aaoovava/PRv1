@@ -28,7 +28,7 @@ void v(FILE** data, FILE** parse, FILE** string) {
             printf("ID. mer. modulu: %s\n", id_string);
             printf("Hodnota 1: %d\n", hodnota1);
             printf("Hodnota 2: %g\n", hodnota2);
-            printf("Poznámka: %s\n", poznamka);
+            printf("Poznamka: %s\n", poznamka);
         }
         break;
 
@@ -41,7 +41,7 @@ void v(FILE** data, FILE** parse, FILE** string) {
         break;
     
     default:
-        printf("V: Nesprávne volba vypisu.\n");
+        printf("V: Nespravna volba vypisu.\n");
         break;
     }
 }
