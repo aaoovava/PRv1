@@ -42,7 +42,7 @@ void v(FILE** data, FILE** parse, FILE** string) {
     
     default:
         printf("V: Nesprávne volba vypisu.\n");
-        break;і
+        break;
     }
 }
 
