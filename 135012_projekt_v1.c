@@ -3,11 +3,12 @@
 #define ID_LENGTH 10
 #define POZNAMKA_LENGTH 500
 
-void v(FILE** data, FILE** parse, FILE** string) {
+void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
     int input, hodnota1;
     float hodnota2;
     char poznamka[POZNAMKA_LENGTH];
     char id_string[ID_LENGTH];
+    int i;
     
     scanf("%d", &input);
     switch (input) {
@@ -15,6 +16,10 @@ void v(FILE** data, FILE** parse, FILE** string) {
         if (*data == NULL) *data = fopen("data.txt", "r");
         if (*parse == NULL) *parse = fopen("parse.txt", "r");
         if (*string == NULL) *string = fopen("string.txt", "r");
+
+        rewind(*string);
+        rewind(*data);
+        rewind(*parse);
 
         if (*data == NULL || *parse == NULL || *string == NULL) {
             printf("V1: Neotvorene txt subory.\n");
@@ -29,11 +34,28 @@ void v(FILE** data, FILE** parse, FILE** string) {
             printf("Hodnota 1: %d\n", hodnota1);
             printf("Hodnota 2: %g\n", hodnota2);
             printf("Poznamka: %s\n", poznamka);
-        }
+        }     
         break;
 
     case 2:
-    /* TODO: V2 */
+
+        if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
+            printf("V2: Nenaplnene polia.\n");
+            return;
+        }
+
+        for (i = 0; i < *countOfLines; i++) {
+            sscanf((*stringArray)[i], "%s", id_string);
+            sscanf((*dataArray)[i], "%*d %*d %d %f", &hodnota1, &hodnota2);
+            sscanf((*parseArray)[i], "%[^\n]", poznamka);
+
+            printf("ID. mer. modulu: %s\n", id_string);
+            printf("Hodnota 1: %d\n", hodnota1);
+            printf("Hodnota 2: %g\n", hodnota2);
+            printf("Poznamka: %s\n", poznamka);
+
+            printf("\n");
+        }
         break;
 
     case 3:
@@ -79,6 +101,52 @@ void h(FILE** string) {
             printf("%c : %d\n", c, fildOfCounts[(unsigned char)c]);
         }
     }
+}
+
+void q(char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
+    int Y, i, hodnota1, hodnota2, hodnota3;
+    float hodnota4;
+    char poznamka[POZNAMKA_LENGTH];
+    char id_string[ID_LENGTH];
+
+    if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
+        printf("Q: Nenaplnene polia.\n");
+        return;
+    }
+
+    scanf("%d", &Y);
+    scanf("%s", id_string);
+    scanf("%d %d %d %f", &hodnota1, &hodnota2, &hodnota3, &hodnota4);
+
+    scanf(" %[^\n]", poznamka);
+
+
+    if (Y > *countOfLines) {
+        Y = *countOfLines;
+    } else {
+        Y--;
+    }
+
+
+    *dataArray = realloc(*dataArray, (*countOfLines + 1) * sizeof(char*));
+    *parseArray = realloc(*parseArray, (*countOfLines + 1) * sizeof(char*));
+    *stringArray = realloc(*stringArray, (*countOfLines + 1) * sizeof(char*));
+
+    for (i = *countOfLines; i >= Y; i--) {
+        (*dataArray)[i] = (*dataArray)[i - 1];
+        (*parseArray)[i] = (*parseArray)[i - 1];
+        (*stringArray)[i] = (*stringArray)[i - 1];
+    }
+
+    (*dataArray)[Y] = malloc(POZNAMKA_LENGTH * sizeof(char));
+    (*parseArray)[Y] = malloc(POZNAMKA_LENGTH * sizeof(char));
+    (*stringArray)[Y] = malloc(ID_LENGTH * sizeof(char));
+
+    sprintf((*stringArray)[Y], "%s", id_string);
+    sprintf((*dataArray)[Y], "%d %d %d %f", hodnota1, hodnota2, hodnota3, hodnota4);
+    sprintf((*parseArray)[Y], "%s", poznamka);
+
+    (*countOfLines)++;
 }
 
 void freeArray(char** array, int countOfLines) {
@@ -161,13 +229,16 @@ int main() {
             h(&string);
             break;
         case 'v':
-            v(&data, &parse, &string);
+            v(&data, &parse, &string, &dataArray, &parseArray, &stringArray, &countOfLines);
             break;
         case 'k':
             k(data, parse, string, &dataArray, &parseArray, &stringArray, &countOfLines);
             return 0;
         case 'n':
             n(&data, &parse, &string, &dataArray, &parseArray, &stringArray, &countOfLines);
+            break;
+            case 'q':
+            q(&dataArray, &parseArray, &stringArray, &countOfLines);
             break;
         default:
             break;
