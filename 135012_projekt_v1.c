@@ -3,6 +3,30 @@
 #define ID_LENGTH 10
 #define POZNAMKA_LENGTH 500
 
+int myStrcmp(const char* str1, const char* str2) {
+     while (*str1 && *str2 && *str1 == *str2) {
+        str1++;
+        str2++;
+    }
+    return *str1 - *str2;
+}
+
+char *myStrstr(const char *str, const char *substring) {
+  const char *a, *b = substring;
+
+  if ( !*b ) return (char *) str;
+  for ( ; *str ; str++) {
+    if (*str != *b) continue;
+    a = str;
+    for (;;) {
+      if ( !*b ) return (char *) str;
+      if (*a++ != *b++) break;
+    }
+    b = substring;
+  }
+  return NULL;
+}
+
 void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
     int input, hodnota1;
     float hodnota2;
@@ -110,7 +134,7 @@ void q(char*** dataArray, char*** parseArray, char*** stringArray, int* countOfL
     char id_string[ID_LENGTH];
 
     if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
-        printf("Q: Nenaplnene polia.\n");
+        printf("Q: Polia nie su vytvorene.\n");
         return;
     }
 
@@ -147,6 +171,74 @@ void q(char*** dataArray, char*** parseArray, char*** stringArray, int* countOfL
     sprintf((*parseArray)[Y], "%s", poznamka);
 
     (*countOfLines)++;
+}
+
+void w(char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
+    char idForDelete[ID_LENGTH];
+    int i, j, deleteCount = 0;
+
+    if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
+        printf("W: Polia nie su vytvorene.\n");
+        return;
+    }
+    scanf("%s", idForDelete);
+    
+    /* Odstránenie znaku nového riadku z `idForDelete`, ak existuje, aby sa zabránilo problémom pri porovnávaní */
+    for (i = 0; idForDelete[i] != '\0'; i++) {
+        if (idForDelete[i] == '\n') {
+            idForDelete[i] = '\0';
+            break;
+        }
+    }
+
+    for (i = 0; i < *countOfLines;) {
+        
+        /* Odstránenie znaku nového riadku z `stringArray[i]`, ak existuje, aby sa zabránilo problémom pri porovnávaní */
+        for (j = 0; (*stringArray)[i][j] != '\0'; j++) {
+            if ((*stringArray)[i][j] == '\n') {
+                (*stringArray)[i][j] = '\0';
+                break;
+            }
+        }
+
+        if (myStrcmp((*stringArray)[i], idForDelete) == 0) {
+            free((*dataArray)[i]);
+            free((*parseArray)[i]);
+            free((*stringArray)[i]);
+            deleteCount++;
+
+            for (j = i; j < *countOfLines - 1; j++) {
+                (*dataArray)[j] = (*dataArray)[j + 1];
+                (*parseArray)[j] = (*parseArray)[j + 1];
+                (*stringArray)[j] = (*stringArray)[j + 1];
+            }
+
+            (*countOfLines)--;
+        } else {
+            i++;
+        }
+    }
+
+    *dataArray = realloc(*dataArray, (*countOfLines) * sizeof(char*));
+    *parseArray = realloc(*parseArray, (*countOfLines) * sizeof(char*));
+    *stringArray = realloc(*stringArray, (*countOfLines) * sizeof(char*));
+
+    printf("W: Vymazalo sa : %d zaznamov !\n", deleteCount);
+}
+
+void e(char ***dataArray, char ***parseArray, char ***stringArray, int* countOfLines) {
+    int i, j;
+    char temp[POZNAMKA_LENGTH];
+    if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
+        printf("E: Polia nie su vytvorene.\n");
+    }
+
+    scanf("%s", temp);
+    for (i = 0; i < *countOfLines; i++) {
+        if (myStrstr((*parseArray)[i], temp) != NULL) {
+            printf("%s", (*parseArray)[i]);
+        }
+    }
 }
 
 void freeArray(char** array, int countOfLines) {
@@ -237,9 +329,15 @@ int main() {
         case 'n':
             n(&data, &parse, &string, &dataArray, &parseArray, &stringArray, &countOfLines);
             break;
-            case 'q':
+        case 'q':
             q(&dataArray, &parseArray, &stringArray, &countOfLines);
             break;
+        case 'w':
+            w(&dataArray, &parseArray, &stringArray, &countOfLines);
+            break;
+        case 'e':
+            e(&dataArray, &parseArray, &stringArray, &countOfLines);
+            break; 
         default:
             break;
         }
