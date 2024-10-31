@@ -231,6 +231,7 @@ void e(char ***dataArray, char ***parseArray, char ***stringArray, int* countOfL
     char temp[POZNAMKA_LENGTH];
     if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
         printf("E: Polia nie su vytvorene.\n");
+        return;
     }
 
     scanf("%s", temp);
