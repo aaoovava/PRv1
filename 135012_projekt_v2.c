@@ -227,7 +227,8 @@ void w(char*** dataArray, char*** parseArray, char*** stringArray, int* countOfL
 }
 
 void e(char ***dataArray, char ***parseArray, char ***stringArray, int* countOfLines) {
-    int i, j;
+    char *line, *p;
+    int i;
     char temp[POZNAMKA_LENGTH];
     if (*dataArray == NULL || *parseArray == NULL || *stringArray == NULL) {
         printf("E: Polia nie su vytvorene.\n");
@@ -237,7 +238,18 @@ void e(char ***dataArray, char ***parseArray, char ***stringArray, int* countOfL
     scanf("%s", temp);
     for (i = 0; i < *countOfLines; i++) {
         if (myStrstr((*parseArray)[i], temp) != NULL) {
-            printf("%s", (*parseArray)[i]);
+            line = (*parseArray)[i];
+            p = line;
+
+            while (*p != '\0') {
+                p++;
+            }
+            
+            if (p != line && *(p - 1) == '\n') {
+                printf("%s", line);
+            } else {
+                printf("%s\n", line);
+            }
         }
     }
 }
