@@ -1,7 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define ID_LENGTH 10
 #define POZNAMKA_LENGTH 500
+
+typedef struct {
+    int Hodnota_ID;
+    int Hodnota_zn;
+    int Hodnota_1;
+    float Hodnota_2;
+    
+}Datarecord;
+
+typedef struct {
+    char Poznamka_ID[ID_LENGTH];
+    float Poznamka_N1;
+    int Poznamka_Hodina;
+    int Poznamka_Minuta;
+    char Poznamka_T[POZNAMKA_LENGTH];
+}Parserecord;
+
+typedef struct {
+    char ID[ID_LENGTH];
+    Datarecord data;
+    Parserecord pars;
+    struct Node* next;
+}Node;
+
 
 int myStrcmp(const char* str1, const char* str2) {
      while (*str1 && *str2 && *str1 == *str2) {
@@ -27,7 +52,7 @@ char *myStrstr(const char *str, const char *substring) {
   return NULL;
 }
 
-void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
+void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines, Node **head) {
     int input, hodnota1;
     float hodnota2;
     char poznamka[POZNAMKA_LENGTH];
@@ -83,8 +108,27 @@ void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
         break;
 
     case 3:
-    /* TODO: V3 */
-        break;
+        if (*head == NULL) {
+            printf("V3: Nenaplneny spajany zoznam.\n");
+            return;
+        }
+
+        Node* current = *head;
+        while (current != NULL) {
+            printf("ID. mer. modulu: %s\n", current->ID);
+            printf("Hodnota 1: %d\n", current->data.Hodnota_1);
+            printf("Hodnota 2: %g\n", current->data.Hodnota_2);
+            printf("Poznamka ID: %s\n", current->pars.Poznamka_ID);
+            printf("Poznamka C: %d : %d => %g\n",
+                current->pars.Poznamka_Hodina,
+                current->pars.Poznamka_Minuta,
+                current->pars.Poznamka_N1);
+            printf("Poznamka T: %s\n", current->pars.Poznamka_T);
+            printf("\n");
+
+            current = current->next;
+    }
+    break;
     
     default:
         printf("V: Nespravna volba vypisu.\n");
@@ -263,7 +307,19 @@ void freeArray(char** array, int countOfLines) {
         free(array);
     }
 }
-
+void freeNode(Node **head) {
+    Node *curentNode = *head;
+    Node *nextNode;
+    if (head != NULL) {
+        while (curentNode != NULL)
+        {
+            nextNode = curentNode->next;
+            free(curentNode);
+            curentNode = nextNode;
+        }
+        *head = NULL;
+    }
+}
 void n(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
     char temp[POZNAMKA_LENGTH];
     int i;
@@ -307,7 +363,255 @@ void n(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
 
 }
 
-void k(FILE* data, FILE* parse, FILE* string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines) {
+void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes) {
+    if (*data == NULL || *parse == NULL || *string == NULL) {
+        printf("M: Neotvoreny subor.\n");
+        return;
+    }
+
+    rewind(*data);
+    rewind(*parse);
+    rewind(*string);
+
+    char tempID[ID_LENGTH];
+    Datarecord tempData;
+    Parserecord tempParse;
+    char parseLine[POZNAMKA_LENGTH];
+    char *token;
+
+    if (*head != NULL) freeNode(head);
+    
+    *countForNodes = 0;
+    while (fscanf(*string, "%s", tempID) == 1) {
+        fscanf(*data, "%d %d %d %f", &tempData.Hodnota_ID, &tempData.Hodnota_zn, &tempData.Hodnota_1, &tempData.Hodnota_2);
+
+        if (!fgets(parseLine, POZNAMKA_LENGTH, *parse)) {
+            break;
+        }
+
+        parseLine[strcspn(parseLine, "\n")] = 0;
+
+        token = strtok(parseLine, "#");
+        if (token && strlen(token) > 0) {
+            strcpy(tempParse.Poznamka_ID, token);
+        } else {
+            strcpy(tempParse.Poznamka_ID, "NaN");
+        }
+
+        token = strtok(NULL, "#");
+        if (token && strlen(token) > 0) {
+            tempParse.Poznamka_N1 = atof(token);
+        } else {
+            tempParse.Poznamka_N1 = -1;
+        }
+
+        token = strtok(NULL, "#");
+        if (token && strlen(token) > 0) {
+            tempParse.Poznamka_Hodina = atoi(strndup(token, 2));
+            tempParse.Poznamka_Minuta = atoi(token + 2);
+        } else {
+            tempParse.Poznamka_Hodina = -1;
+            tempParse.Poznamka_Minuta = -1;
+        }
+
+        token = strtok(NULL, "#");
+        if (token && strlen(token) > 0) {
+            strcpy(tempParse.Poznamka_T, token);
+        } else {
+            strcpy(tempParse.Poznamka_T, "NaN");
+        }
+
+        Node* newNode = (Node*)malloc(sizeof(Node));
+        if (newNode == NULL) {
+            printf("M: Chyba alokácie pamäte.\n");
+            return;
+        }
+        
+        strcpy(newNode->ID, tempID);
+        newNode->data = tempData;
+        newNode->pars = tempParse;
+        newNode->next = NULL;
+
+        if (*head == NULL) {
+            *head = newNode;
+        } else {
+            Node* current = *head;
+            while (current->next != NULL) {
+                current = current->next;
+            }
+            current->next = newNode;
+        }
+
+        (*countForNodes)++;
+    }
+    printf("M: Nacitalo sa %d zaznamov.\n", *countForNodes);
+}
+
+void a(Node **head, int *countForNodes) {
+    int position;
+    char tempID[ID_LENGTH];
+    Datarecord tempData;
+    Parserecord tempParse;
+    char parseLine[POZNAMKA_LENGTH];
+    char *token;
+    Node *newNode, *currentNode;
+
+    scanf("%d", &position);
+
+    scanf("%s", tempID); 
+    scanf("%d %d %d %f", &tempData.Hodnota_ID, &tempData.Hodnota_zn, &tempData.Hodnota_1, &tempData.Hodnota_2); 
+    scanf(" %[^\n]", parseLine);
+
+    parseLine[strcspn(parseLine, "\n")] = 0;
+    token = strtok(parseLine, "#");
+    if (token && strlen(token) > 0) {
+        strcpy(tempParse.Poznamka_ID, token);
+    } else {
+        strcpy(tempParse.Poznamka_ID, "NaN");
+    }
+
+    token = strtok(NULL, "#");
+    if (token && strlen(token) > 0) {
+        tempParse.Poznamka_N1 = atof(token);
+    } else {
+        tempParse.Poznamka_N1 = -1;
+    }
+
+    token = strtok(NULL, "#");
+    if (token && strlen(token) > 0) {
+        tempParse.Poznamka_Hodina = atoi(strndup(token, 2));
+        tempParse.Poznamka_Minuta = atoi(token + 2);
+    } else {
+        tempParse.Poznamka_Hodina = -1;
+        tempParse.Poznamka_Minuta = -1;
+    }
+
+    token = strtok(NULL, "#");
+    if (token && strlen(token) > 0) {
+        strcpy(tempParse.Poznamka_T, token);
+    } else {
+        strcpy(tempParse.Poznamka_T, "NaN");
+    }
+
+    newNode = (Node *)malloc(sizeof(Node));
+    if (!newNode) {
+        printf("A: Chyba alokácie pamäte.\n");
+        return;
+    }
+
+    strcpy(newNode->ID, tempID);
+    newNode->data = tempData;
+    newNode->pars = tempParse;
+    newNode->next = NULL;
+
+
+    if (*head == NULL || position <= 1) {
+        newNode->next = *head;
+        *head = newNode;
+    } else if (position > *countForNodes) {
+        currentNode = *head;
+        while (currentNode->next != NULL) {
+            currentNode = currentNode->next;
+        }
+        currentNode->next = newNode;
+    } else {
+        int index = 1;
+        currentNode = *head;
+        while (currentNode->next != NULL && index < position - 1) {
+            currentNode = currentNode->next;
+            index++;
+        }
+        newNode->next = currentNode->next;
+        currentNode->next = newNode;
+    }
+    (*countForNodes)++;
+}
+
+void s (Node **head, int *countForNodes) {
+    if (*head == NULL) {
+        printf("S: Spajany zoznam nie je vytvorený.\n");
+        return;
+    }
+
+    char idToDelete[ID_LENGTH];
+    int deleteCount = 0;
+    Node *currentNode = *head, *prevNode = NULL, *tempNode;
+
+    scanf("%s", idToDelete);
+
+    while (currentNode != NULL && strcmp(currentNode->ID, idToDelete) == 0) {
+        tempNode = currentNode;
+        currentNode = currentNode->next;
+        free(tempNode);
+        deleteCount++;
+    }
+
+    *head = currentNode;
+
+    while (currentNode != NULL) {
+        while (currentNode != NULL && strcmp(currentNode->ID, idToDelete) != 0) {
+            prevNode = currentNode;
+            currentNode = currentNode->next;
+        }
+
+        if (currentNode == NULL) break;
+
+        prevNode->next = currentNode->next;
+        free(currentNode);
+        currentNode = prevNode->next;
+        deleteCount++;
+    }
+
+    (*countForNodes) -= deleteCount;
+
+    printf("S: Vymazalo sa : %d zaznamov !\n", deleteCount);
+} 
+
+void d(Node **head, int *countForNodes) {
+    int c1, c2, i;
+    Node *prevNodeC1 = NULL, *prevNodeC2 = NULL;
+    Node *currentNodeC1 = *head, *currentNodeC2 = *head;
+    Node *tempNode;
+
+    scanf("%d %d", &c1, &c2);
+
+    if (c1 <= 0 || c2 <= 0 || c1 > *countForNodes || c2 > *countForNodes || c1 == c2) {
+        return;
+    }
+
+    if (c1 > c2) {
+        int temp = c1;
+        c1 = c2;
+        c2 = temp;
+    }
+
+    for (i = 1; i < c1; i++) {
+        prevNodeC1 = currentNodeC1;
+        currentNodeC1 = currentNodeC1->next;
+    }
+
+    for (i = 1; i < c2; i++) {
+        prevNodeC2 = currentNodeC2;
+        currentNodeC2 = currentNodeC2->next;
+    }
+
+    if (prevNodeC1 != NULL) {
+        prevNodeC1->next = currentNodeC2;
+    } else {
+        *head = currentNodeC2;
+    }
+
+    if (prevNodeC2 != NULL) {
+        prevNodeC2->next = currentNodeC1;
+    } else {
+        *head = currentNodeC1;
+    }
+
+    tempNode = currentNodeC1->next;
+    currentNodeC1->next = currentNodeC2->next;
+    currentNodeC2->next = tempNode;
+}
+void k(FILE* data, FILE* parse, FILE* string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines, Node **head) {
     if (data != NULL) fclose(data); 
     if (parse != NULL) fclose(parse);
     if (string != NULL) fclose(string);
@@ -315,16 +619,20 @@ void k(FILE* data, FILE* parse, FILE* string, char*** dataArray, char*** parseAr
     if (*dataArray != NULL) freeArray(*dataArray, *countOfLines);
     if (*parseArray != NULL) freeArray(*parseArray, *countOfLines);
     if (*stringArray != NULL) freeArray(*stringArray, *countOfLines);
+
+    if (*head != NULL) freeNode(head);
 }
 
 int main() {
     FILE* data = NULL, * parse = NULL, * string = NULL;
     char commandInput;
-    int countOfLines = 0;  
+    int countOfLines = 0;
+    int countForNodes = 0;  
 
     char** dataArray = NULL;
     char** parseArray = NULL;
     char** stringArray = NULL;
+    Node *head = NULL;
 
     while (1) {
         scanf("%c", &commandInput); 
@@ -334,10 +642,10 @@ int main() {
             h(&string);
             break;
         case 'v':
-            v(&data, &parse, &string, &dataArray, &parseArray, &stringArray, &countOfLines);
+            v(&data, &parse, &string, &dataArray, &parseArray, &stringArray, &countOfLines, &head);
             break;
         case 'k':
-            k(data, parse, string, &dataArray, &parseArray, &stringArray, &countOfLines);
+            k(data, parse, string, &dataArray, &parseArray, &stringArray, &countOfLines, &head);
             return 0;
         case 'n':
             n(&data, &parse, &string, &dataArray, &parseArray, &stringArray, &countOfLines);
@@ -351,6 +659,19 @@ int main() {
         case 'e':
             e(&dataArray, &parseArray, &stringArray, &countOfLines);
             break; 
+        case 'm':
+            m(&data, &parse, &string, &head, &countForNodes);
+            break;
+        case 'a':
+            a(&head, &countForNodes);
+            break;    
+        case 's':
+            s(&head, &countForNodes);
+            break;
+
+        case 'd':
+            d(&head, &countForNodes);
+            break;    
         default:
             break;
         }
