@@ -120,13 +120,14 @@ void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
             printf("Hodnota 2: %g\n", current->data.Hodnota_2);
             printf("Poznamka ID: %s\n", current->pars.Poznamka_ID);
             printf("Poznamka C: %d : %d => %g\n",
-                current->pars.Poznamka_Hodina,
+                current->pars.
+                Poznamka_Hodina,
                 current->pars.Poznamka_Minuta,
                 current->pars.Poznamka_N1);
             printf("Poznamka T: %s\n", current->pars.Poznamka_T);
             printf("\n");
 
-            current = current->next;
+            current = (Node*)current->next;
     }
     break;
     
@@ -313,7 +314,7 @@ void freeNode(Node **head) {
     if (head != NULL) {
         while (curentNode != NULL)
         {
-            nextNode = curentNode->next;
+            nextNode = (Node*)curentNode->next;
             free(curentNode);
             curentNode = nextNode;
         }
@@ -437,9 +438,9 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
         } else {
             Node* current = *head;
             while (current->next != NULL) {
-                current = current->next;
+                current = (Node*)current->next;
             }
-            current->next = newNode;
+            current->next = (struct Node*)newNode;
         }
 
         (*countForNodes)++;
@@ -506,23 +507,23 @@ void a(Node **head, int *countForNodes) {
 
 
     if (*head == NULL || position <= 1) {
-        newNode->next = *head;
+        newNode->next = (struct Node*)*head;
         *head = newNode;
     } else if (position > *countForNodes) {
         currentNode = *head;
         while (currentNode->next != NULL) {
-            currentNode = currentNode->next;
+            currentNode = (Node*)currentNode->next;
         }
-        currentNode->next = newNode;
+        currentNode->next = (struct Node*)newNode;
     } else {
         int index = 1;
         currentNode = *head;
         while (currentNode->next != NULL && index < position - 1) {
-            currentNode = currentNode->next;
+            currentNode = (Node*)currentNode->next;
             index++;
         }
         newNode->next = currentNode->next;
-        currentNode->next = newNode;
+        currentNode->next = (struct Node*)newNode;
     }
     (*countForNodes)++;
 }
@@ -541,7 +542,7 @@ void s (Node **head, int *countForNodes) {
 
     while (currentNode != NULL && strcmp(currentNode->ID, idToDelete) == 0) {
         tempNode = currentNode;
-        currentNode = currentNode->next;
+        currentNode = (Node*)currentNode->next;
         free(tempNode);
         deleteCount++;
     }
@@ -551,14 +552,14 @@ void s (Node **head, int *countForNodes) {
     while (currentNode != NULL) {
         while (currentNode != NULL && strcmp(currentNode->ID, idToDelete) != 0) {
             prevNode = currentNode;
-            currentNode = currentNode->next;
+            currentNode = (Node*)currentNode->next;
         }
 
         if (currentNode == NULL) break;
 
         prevNode->next = currentNode->next;
         free(currentNode);
-        currentNode = prevNode->next;
+        currentNode = (Node*)prevNode->next;
         deleteCount++;
     }
 
@@ -587,29 +588,29 @@ void d(Node **head, int *countForNodes) {
 
     for (i = 1; i < c1; i++) {
         prevNodeC1 = currentNodeC1;
-        currentNodeC1 = currentNodeC1->next;
+        currentNodeC1 = (Node*)currentNodeC1->next;
     }
 
     for (i = 1; i < c2; i++) {
         prevNodeC2 = currentNodeC2;
-        currentNodeC2 = currentNodeC2->next;
+        currentNodeC2 = (Node*)currentNodeC2->next;
     }
 
     if (prevNodeC1 != NULL) {
-        prevNodeC1->next = currentNodeC2;
+        prevNodeC1->next = (struct Node*)currentNodeC2;
     } else {
         *head = currentNodeC2;
     }
 
     if (prevNodeC2 != NULL) {
-        prevNodeC2->next = currentNodeC1;
+        prevNodeC2->next = (struct Node*)currentNodeC1;
     } else {
         *head = currentNodeC1;
     }
 
-    tempNode = currentNodeC1->next;
+    tempNode = (Node*)currentNodeC1->next;
     currentNodeC1->next = currentNodeC2->next;
-    currentNodeC2->next = tempNode;
+    currentNodeC2->next = (struct Node*)tempNode;
 }
 void k(FILE* data, FILE* parse, FILE* string, char*** dataArray, char*** parseArray, char*** stringArray, int* countOfLines, Node **head) {
     if (data != NULL) fclose(data); 
@@ -668,7 +669,6 @@ int main() {
         case 's':
             s(&head, &countForNodes);
             break;
-
         case 'd':
             d(&head, &countForNodes);
             break;    
