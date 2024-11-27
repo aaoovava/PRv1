@@ -366,11 +366,13 @@ void n(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
 
 void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes) {
     Node *newNode;
+    Node *current;
     char tempID[ID_LENGTH];
     Datarecord tempData;
     Parserecord tempParse;
     char parseLine[POZNAMKA_LENGTH];
     char *token;
+    char temp[3]; 
 
     if (*data == NULL || *parse == NULL || *string == NULL) {
         printf("M: Neotvoreny subor.\n");
@@ -381,8 +383,9 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
     rewind(*parse);
     rewind(*string);
 
-
-    if (*head != NULL) freeNode(head);
+    if (*head != NULL) {
+        freeNode(head);
+    }
     
     *countForNodes = 0;
     while (fscanf(*string, "%s", tempID) == 1) {
@@ -393,6 +396,7 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
         }
 
         parseLine[strcspn(parseLine, "\n")] = 0;
+        parseLine[strcspn(parseLine, "\r")] = 0;
 
         token = strtok(parseLine, "#");
         if (token && strlen(token) > 0) {
@@ -410,7 +414,9 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
 
         token = strtok(NULL, "#");
         if (token && strlen(token) > 0) {
-            tempParse.Poznamka_Hodina = atoi(strndup(token, 2));
+            strncpy(temp, token, 2); 
+            temp[2] = '\0';
+            tempParse.Poznamka_Hodina = atoi(temp);
             tempParse.Poznamka_Minuta = atoi(token + 2);
         } else {
             tempParse.Poznamka_Hodina = -1;
@@ -429,7 +435,7 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
             printf("M: Chyba alokácie pamäte.\n");
             return;
         }
-        
+
         strcpy(newNode->ID, tempID);
         newNode->data = tempData;
         newNode->pars = tempParse;
@@ -438,7 +444,7 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
         if (*head == NULL) {
             *head = newNode;
         } else {
-            Node* current = *head;
+            current = *head;
             while (current->next != NULL) {
                 current = (Node*)current->next;
             }
@@ -457,15 +463,20 @@ void a(Node **head, int *countForNodes) {
     Parserecord tempParse;
     char parseLine[POZNAMKA_LENGTH];
     char *token;
-    Node *newNode, *currentNode;
+    char temp[3]; 
+    Node *newNode;
+    Node *currentNode;
+    int index;
 
     scanf("%d", &position);
 
-    scanf("%s", tempID); 
-    scanf("%d %d %d %f", &tempData.Hodnota_ID, &tempData.Hodnota_zn, &tempData.Hodnota_1, &tempData.Hodnota_2); 
+    scanf("%s", tempID);
+    scanf("%d %d %d %f", &tempData.Hodnota_ID, &tempData.Hodnota_zn, &tempData.Hodnota_1, &tempData.Hodnota_2);
     scanf(" %[^\n]", parseLine);
 
     parseLine[strcspn(parseLine, "\n")] = 0;
+    parseLine[strcspn(parseLine, "\r")] = 0;
+
     token = strtok(parseLine, "#");
     if (token && strlen(token) > 0) {
         strcpy(tempParse.Poznamka_ID, token);
@@ -482,7 +493,9 @@ void a(Node **head, int *countForNodes) {
 
     token = strtok(NULL, "#");
     if (token && strlen(token) > 0) {
-        tempParse.Poznamka_Hodina = atoi(strndup(token, 2));
+        strncpy(temp, token, 2); 
+        temp[2] = '\0'; 
+        tempParse.Poznamka_Hodina = atoi(temp);
         tempParse.Poznamka_Minuta = atoi(token + 2);
     } else {
         tempParse.Poznamka_Hodina = -1;
@@ -497,31 +510,34 @@ void a(Node **head, int *countForNodes) {
     }
 
     newNode = (Node *)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Помилка алокації пам'яті.\n");
+        return;
+    }
 
     strcpy(newNode->ID, tempID);
     newNode->data = tempData;
     newNode->pars = tempParse;
     newNode->next = NULL;
 
-
     if (*head == NULL || position <= 1) {
-        newNode->next = (struct Node*)*head;
+        newNode->next = (struct Node *)*head;
         *head = newNode;
     } else if (position > *countForNodes) {
         currentNode = *head;
         while (currentNode->next != NULL) {
-            currentNode = (Node*)currentNode->next;
+            currentNode = (Node *)currentNode->next;
         }
-        currentNode->next = (struct Node*)newNode;
+        currentNode->next = (struct Node *)newNode;
     } else {
-        int index = 1;
+        index = 1;
         currentNode = *head;
         while (currentNode->next != NULL && index < position - 1) {
-            currentNode = (Node*)currentNode->next;
+            currentNode = (Node *)currentNode->next;
             index++;
         }
         newNode->next = currentNode->next;
-        currentNode->next = (struct Node*)newNode;
+        currentNode->next = (struct Node *)newNode;
     }
     (*countForNodes)++;
 }
