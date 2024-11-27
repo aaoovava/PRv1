@@ -58,6 +58,7 @@ void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
     char poznamka[POZNAMKA_LENGTH];
     char id_string[ID_LENGTH];
     int i;
+    Node *current;
     
     scanf("%d", &input);
     switch (input) {
@@ -112,8 +113,7 @@ void v(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
             printf("V3: Nenaplneny spajany zoznam.\n");
             return;
         }
-
-        Node* current = *head;
+         current = *head;
         while (current != NULL) {
             printf("ID. mer. modulu: %s\n", current->ID);
             printf("Hodnota 1: %d\n", current->data.Hodnota_1);
@@ -365,6 +365,13 @@ void n(FILE** data, FILE** parse, FILE** string, char*** dataArray, char*** pars
 }
 
 void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes) {
+    Node *newNode;
+    char tempID[ID_LENGTH];
+    Datarecord tempData;
+    Parserecord tempParse;
+    char parseLine[POZNAMKA_LENGTH];
+    char *token;
+
     if (*data == NULL || *parse == NULL || *string == NULL) {
         printf("M: Neotvoreny subor.\n");
         return;
@@ -374,11 +381,6 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
     rewind(*parse);
     rewind(*string);
 
-    char tempID[ID_LENGTH];
-    Datarecord tempData;
-    Parserecord tempParse;
-    char parseLine[POZNAMKA_LENGTH];
-    char *token;
 
     if (*head != NULL) freeNode(head);
     
@@ -422,7 +424,7 @@ void m(FILE** data, FILE** parse, FILE** string, Node **head, int* countForNodes
             strcpy(tempParse.Poznamka_T, "NaN");
         }
 
-        Node* newNode = (Node*)malloc(sizeof(Node));
+        newNode = (Node*)malloc(sizeof(Node));
         if (newNode == NULL) {
             printf("M: Chyba alokácie pamäte.\n");
             return;
@@ -495,10 +497,6 @@ void a(Node **head, int *countForNodes) {
     }
 
     newNode = (Node *)malloc(sizeof(Node));
-    if (!newNode) {
-        printf("A: Chyba alokácie pamäte.\n");
-        return;
-    }
 
     strcpy(newNode->ID, tempID);
     newNode->data = tempData;
@@ -529,14 +527,13 @@ void a(Node **head, int *countForNodes) {
 }
 
 void s (Node **head, int *countForNodes) {
+    char idToDelete[ID_LENGTH];
+    int deleteCount = 0;
+    Node *currentNode = *head, *prevNode = NULL, *tempNode;
     if (*head == NULL) {
         printf("S: Spajany zoznam nie je vytvorený.\n");
         return;
     }
-
-    char idToDelete[ID_LENGTH];
-    int deleteCount = 0;
-    Node *currentNode = *head, *prevNode = NULL, *tempNode;
 
     scanf("%s", idToDelete);
 
@@ -569,7 +566,7 @@ void s (Node **head, int *countForNodes) {
 } 
 
 void d(Node **head, int *countForNodes) {
-    int c1, c2, i;
+    int c1, c2, i, temp;
     Node *prevNodeC1 = NULL, *prevNodeC2 = NULL;
     Node *currentNodeC1 = *head, *currentNodeC2 = *head;
     Node *tempNode;
@@ -581,7 +578,7 @@ void d(Node **head, int *countForNodes) {
     }
 
     if (c1 > c2) {
-        int temp = c1;
+        temp = c1;
         c1 = c2;
         c2 = temp;
     }
@@ -624,7 +621,7 @@ void k(FILE* data, FILE* parse, FILE* string, char*** dataArray, char*** parseAr
     if (*head != NULL) freeNode(head);
 }
 
-int main() {
+int main(void) {
     FILE* data = NULL, * parse = NULL, * string = NULL;
     char commandInput;
     int countOfLines = 0;
